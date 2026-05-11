@@ -88,6 +88,7 @@ CORS_ALLOWED_ORIGINS = [
     for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
     if origin.strip()
 ]
+CORS_ALLOW_ALL_ORIGINS = os.getenv("CORS_ALLOW_ALL_ORIGINS", "False") == "True"
 
 RIOT_API_KEY = os.getenv("RIOT_API_KEY", "")
 RIOT_REGION = os.getenv("RIOT_REGION", "asia")
