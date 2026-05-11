@@ -9,9 +9,9 @@ services:
       - key: DJANGO_DEBUG
         value: "False"
       - key: DJANGO_ALLOWED_HOSTS
-        value: pointcalculator-api.onrender.com
+        value: pointcalculator.onrender.com
       - key: CORS_ALLOWED_ORIGINS
-        value: https://YOUR_GITHUB_USERNAME.github.io
+        value: https://esal-57.github.io
       - key: RIOT_REGION
         value: asia
       - key: RIOT_PLATFORM
