@@ -32,6 +32,27 @@ def fetch_page(url):
     return response.text
 
 
+def fetch_fow_league_graph(sid, referer):
+    response = requests.get(
+        "https://www.fow.lol/api/leaguegraph",
+        params={
+            "sid": sid,
+            "region": "kr",
+            "queue": "RANKED_SOLO_5x5",
+            "mode": "day",
+        },
+        headers={
+            "User-Agent": "Mozilla/5.0 PointCalculator test crawler",
+            "Accept-Language": "ko-KR,ko;q=0.9,en;q=0.8",
+            "Referer": referer,
+        },
+        timeout=12,
+    )
+    if not response.ok:
+        raise ScrapeError(f"{response.status_code} 응답")
+    return response.text
+
+
 def extract_tier_mentions(html):
     normalized_html = html.replace("\\", "")
     patterns = [
@@ -117,6 +138,40 @@ def normalize_scraped_tier(tier, division):
     return f"{tier} {ROMAN_DIVISIONS.get(division, division)}"
 
 
+def extract_fow_sid(html):
+    patterns = [
+        r"data-api=\"/api/leaguegraph\?sid=(\d+)&",
+        r"data-sid=['\"](\d+)['\"]",
+        r"sid=['\"](\d+)['\"]",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, html)
+        if match:
+            return match.group(1)
+    return None
+
+
+def extract_fow_graph_best_rank(html):
+    match = re.search(
+        r"BEST\(S(?P<season>\d+)\):\s*"
+        r"(?P<tier>IRON|BRONZE|SILVER|GOLD|PLATINUM|EMERALD|DIAMOND|MASTER|GRANDMASTER|CHALLENGER)"
+        r"(?:\s+(?P<division>I{1,3}|IV|V|[1-4]))?\s+"
+        r"(?P<lp>[\d,]+)\s*LP",
+        html,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return None
+
+    return {
+        "season": f"S{match.group('season')}",
+        "highRank": {
+            "tier": normalize_scraped_tier(match.group("tier"), match.group("division") or ""),
+            "lp": match.group("lp").replace(",", ""),
+        },
+    }
+
+
 def extract_fow_solo_ranks(html):
     ranks = []
     seen = set()
@@ -191,6 +246,13 @@ def crawl_sources(game_name, tag_line):
                 result["currentHighestRank"] = extract_opgg_current_highest_rank(html)
             if source["name"] == "FOW.LOL":
                 result["seasonRanks"] = extract_fow_solo_ranks(html)
+                sid = extract_fow_sid(html)
+                if sid:
+                    graph_html = fetch_fow_league_graph(sid, source["url"])
+                    graph_rank = extract_fow_graph_best_rank(graph_html)
+                    if graph_rank:
+                        result["seasonRanks"].append(graph_rank)
+                        result["graphBestRank"] = graph_rank
             results.append(result)
         except requests.RequestException as error:
             results.append({**source, "ok": False, "message": str(error)})
