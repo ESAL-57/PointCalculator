@@ -45,6 +45,7 @@ function rankToPointTier(rank) {
 
 function makePlayer(position = "top") {
   return {
+    riotId: "",
     gameName: "",
     tagLine: "",
     name: "",
@@ -58,6 +59,7 @@ function makePlayer(position = "top") {
 }
 
 function formatRiotId(player) {
+  if (player.riotId !== undefined) return player.riotId;
   if (!player.gameName && !player.tagLine) return "";
   return `${player.gameName}${player.tagLine ? `#${player.tagLine}` : ""}`;
 }
@@ -65,6 +67,7 @@ function formatRiotId(player) {
 function parseRiotId(value) {
   const [gameName = "", ...tagParts] = value.split("#");
   return {
+    riotId: value,
     gameName: gameName.trim(),
     tagLine: tagParts.join("#").trim(),
     name: gameName.trim(),
@@ -75,6 +78,7 @@ function parseRosterText(text) {
   const matches = text.matchAll(/([^#,\s.，、;；/|]+)#([A-Za-z0-9가-힣_-]+)/g);
 
   return Array.from(matches, (match) => ({
+    riotId: `${match[1].trim()}#${match[2].trim()}`,
     gameName: match[1].trim(),
     tagLine: match[2].trim(),
     name: match[1].trim(),
