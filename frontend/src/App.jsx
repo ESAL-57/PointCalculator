@@ -46,7 +46,7 @@ function rankToPointTier(rank) {
 function makePlayer(position = "top") {
   return {
     gameName: "",
-    tagLine: "KR1",
+    tagLine: "",
     name: "",
     position,
     participantRank: defaultPeakRank(),
@@ -54,6 +54,20 @@ function makePlayer(position = "top") {
     previousPeakRank: defaultPeakRank(),
     riot: null,
     message: "",
+  };
+}
+
+function formatRiotId(player) {
+  if (!player.gameName && !player.tagLine) return "";
+  return `${player.gameName}${player.tagLine ? `#${player.tagLine}` : ""}`;
+}
+
+function parseRiotId(value) {
+  const [gameName = "", ...tagParts] = value.split("#");
+  return {
+    gameName: gameName.trim(),
+    tagLine: tagParts.join("#").trim(),
+    name: gameName.trim(),
   };
 }
 
@@ -68,6 +82,10 @@ function parseRosterText(text) {
 }
 
 function toApiPlayer(player) {
+  if (!player.gameName || !player.tagLine) {
+    throw new Error("닉네임#태그 형식으로 입력해주세요. 예: Hide on bush#KR1");
+  }
+
   return {
     name: player.name || player.gameName,
     gameName: player.gameName,
@@ -83,19 +101,11 @@ function RiotLookup({ player, onChange }) {
   return (
     <div className="lookup-row">
       <label>
-        닉네임
+        닉네임#태그
         <input
-          value={player.gameName}
-          onChange={(event) => onChange({ gameName: event.target.value, name: event.target.value })}
-          placeholder="Hide on bush"
-        />
-      </label>
-      <label>
-        태그
-        <input
-          value={player.tagLine}
-          onChange={(event) => onChange({ tagLine: event.target.value })}
-          placeholder="KR1"
+          value={formatRiotId(player)}
+          onChange={(event) => onChange(parseRiotId(event.target.value))}
+          placeholder="Hide on bush#KR1"
         />
       </label>
     </div>
@@ -465,7 +475,7 @@ function App() {
       <header className="app-header">
         <h1>교류전 점수 계산기</h1>
         <p className="lead">
-          닉네임과 태그를 입력하면 기록을 불러와 포지션별 점수와 팀 총점을 계산합니다.
+          닉네임#태그를 입력하면 기록을 불러와 포지션별 점수와 팀 총점을 계산합니다.
         </p>
       </header>
 

@@ -151,13 +151,13 @@ label {
 
 .lookup-row {
   display: grid;
-  grid-template-columns: minmax(160px, 1fr) 96px auto;
+  grid-template-columns: 1fr;
   gap: 10px;
   align-items: end;
 }
 
 .player-card .lookup-row {
-  grid-template-columns: 1fr 84px;
+  grid-template-columns: 1fr;
 }
 
 .player-card .lookup-row .secondary-button {
