@@ -1,0 +1,14 @@
+.env
+.env.*
+node_modules/
+.venv/
+dist/
+build/
+__pycache__/
+*.py[cod]
+*.sqlite3
+backend/staticfiles/
+frontend/.env.local
+frontend/.env.*.local
+.DS_Store
+Thumbs.db
