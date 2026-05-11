@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from .calculator import calculate_player_positions, calculate_team, options_payload
+from .models import SearchLog
 from .riot import RiotApiError, lookup_player
 from .scraper import crawl_sources, summarize_combined_ranks
 
@@ -76,6 +77,12 @@ def crawl_player(request):
         riot = lookup_player(game_name, tag_line)
     except RiotApiError as error:
         if "찾을 수 없습니다" in str(error):
+            SearchLog.objects.create(
+                game_name=game_name,
+                tag_line=tag_line,
+                success=False,
+                message=str(error),
+            )
             return JsonResponse(
                 {"message": "존재하지 않는 닉네임 또는 태그입니다. 입력값을 다시 확인해주세요."},
                 status=404,
@@ -83,6 +90,12 @@ def crawl_player(request):
         riot_message = str(error)
 
     sources = crawl_sources(game_name, tag_line)
+    SearchLog.objects.create(
+        game_name=game_name,
+        tag_line=tag_line,
+        success=True,
+        message=riot_message,
+    )
 
     return JsonResponse(
         {

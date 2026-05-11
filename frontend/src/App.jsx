@@ -500,6 +500,7 @@ function App() {
       ) : (
         <ScoreCheckPage />
       )}
+      <footer className="privacy-note">디버깅 목적으로 검색 기록을 수집 중입니다.</footer>
     </main>
   );
 }
