@@ -89,7 +89,7 @@ def crawl_player(request):
             "riot": riot,
             "riotMessage": riot_message,
             "sources": sources,
-            "summary": summarize_combined_ranks(sources),
+            "summary": summarize_combined_ranks(sources, riot),
         }
     )
 

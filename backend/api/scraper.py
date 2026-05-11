@@ -233,6 +233,21 @@ def choose_best_rank(ranks):
     return max(valid_ranks, key=rank_strength)
 
 
+def riot_rank_to_scraped_rank(entry):
+    if not entry:
+        return None
+
+    tier = (entry.get("tier") or "").lower()
+    division = ROMAN_DIVISIONS.get(entry.get("rank"), entry.get("rank") or "")
+    if not tier:
+        return None
+
+    return {
+        "tier": tier if tier in ["master", "grandmaster", "challenger"] else f"{tier} {division}",
+        "lp": str(entry.get("leaguePoints") or 0),
+    }
+
+
 def summarize_opgg_ranks(source):
     season_ranks = source.get("seasonRanks") or []
     season_2025_2026 = []
@@ -265,11 +280,12 @@ def fow_season_number(season):
     return int(match.group(1)) if match else -1
 
 
-def summarize_combined_ranks(sources):
+def summarize_combined_ranks(sources, riot=None):
     opgg = next((source for source in sources if source["name"] == "OP.GG"), {})
     fow = next((source for source in sources if source["name"] == "FOW.LOL"), {})
     opgg_summary = summarize_opgg_ranks(opgg)
     fow_ranks = fow.get("seasonRanks") or []
+    riot_current_solo = riot_rank_to_scraped_rank((riot or {}).get("soloRank"))
 
     fow_s14 = [
         season["highRank"]
@@ -287,7 +303,7 @@ def summarize_combined_ranks(sources):
         if 1 <= fow_season_number(season.get("season")) <= 14
     ]
     best_2025_to_2026 = choose_best_rank(
-        [opgg_summary["best2025To2026"], *fow_s15_s16]
+        [opgg_summary["best2025To2026"], *fow_s15_s16, riot_current_solo]
     )
 
     return {
