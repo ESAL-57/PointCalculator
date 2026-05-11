@@ -276,16 +276,24 @@ def summarize_combined_ranks(sources):
         for season in fow_ranks
         if fow_season_number(season.get("season")) == 14
     ]
+    fow_s15_s16 = [
+        season["highRank"]
+        for season in fow_ranks
+        if fow_season_number(season.get("season")) in [15, 16]
+    ]
     fow_s14_and_below = [
         season["highRank"]
         for season in fow_ranks
         if 1 <= fow_season_number(season.get("season")) <= 14
     ]
+    best_2025_to_2026 = choose_best_rank(
+        [opgg_summary["best2025To2026"], *fow_s15_s16]
+    )
 
     return {
-        "best2025To2026": opgg_summary["best2025To2026"],
+        "best2025To2026": best_2025_to_2026,
         "best2024": choose_best_rank(fow_s14),
         "allTimeBest": choose_best_rank(
-            [opgg_summary["best2025To2026"], *fow_s14_and_below]
+            [best_2025_to_2026, *fow_s14_and_below]
         ),
     }
